@@ -489,4 +489,4 @@ if __name__ == '__main__':
     create_database()
     schedule.every(10).seconds.do(save_portfolio_value)
     threading.Thread(target=run_schedule, daemon=True).start()
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

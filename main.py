@@ -466,6 +466,7 @@ def is_market_open():
     now = datetime.now(pytz.timezone('US/Eastern'))
     market_start = datetime_time(9, 30)
     market_end = datetime_time(16, 0)
+    print("Market is open: ", is_market_open())
     return (now.weekday() < 5 and
             market_start <= now.time() <= market_end)
 

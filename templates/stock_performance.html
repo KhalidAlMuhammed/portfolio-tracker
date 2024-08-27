@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Performance - Portfolio Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Stock Performance</h1>
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li><a href="{{ url_for('index') }}" class="text-blue-500 hover:text-blue-700">Back to Portfolio</a></li>
+                <li><a href="{{ url_for('add_transaction_route') }}" class="text-blue-500 hover:text-blue-700">Add Transaction</a></li>
+                <li><a href="{{ url_for('transaction_history') }}" class="text-blue-500 hover:text-blue-700">Transaction History</a></li>
+                <li><a href="{{ url_for('portfolio_distribution') }}" class="text-blue-500 hover:text-blue-700">Portfolio Distribution</a></li>
+            </ul>
+        </nav>
+        
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-xl font-semibold mb-4">1-Month Stock Performance</h2>
+            <div id="stock-performance-chart" class="w-full h-96"></div>
+        </div>
+        
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-xl font-semibold mb-4">Performance Analysis</h2>
+            <p class="mb-4">This chart displays the 1-month performance of each stock in your portfolio. The percentage change indicates how much each stock has gained or lost over the past month.</p>
+            <p>Interpreting the results:</p>
+            <ul class="list-disc list-inside">
+                <li>Positive values (green) indicate gains, while negative values (red) indicate losses.</li>
+                <li>Compare individual stock performance to overall market trends.</li>
+                <li>Consider how each stock's performance contributes to your portfolio's overall return.</li>
+                <li>Use this information to make informed decisions about rebalancing or adjusting your holdings.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        var graphJSON = {{ graph_json | safe }};
+        Plotly.newPlot('stock-performance-chart', graphJSON.data, graphJSON.layout);
+    </script>
+</body>
+</html>

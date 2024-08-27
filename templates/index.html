@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Portfolio Tracker</h1>
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li><a href="{{ url_for('add_transaction_route') }}" class="text-blue-500 hover:text-blue-700">Add Transaction</a></li>
+                <li><a href="{{ url_for('transaction_history') }}" class="text-blue-500 hover:text-blue-700">Transaction History</a></li>
+                <li><a href="{{ url_for('import_csv') }}" class="text-blue-500 hover:text-blue-700">Import CSV</a></li>
+                <li><a href="{{ url_for('export_csv') }}" class="text-blue-500 hover:text-blue-700">Export CSV</a></li>
+                <li><a href="{{ url_for('portfolio_distribution') }}" class="text-blue-500 hover:text-blue-700">Portfolio Distribution</a></li>
+                <li><a href="{{ url_for('stock_performance') }}" class="text-blue-500 hover:text-blue-700">Stock Performance</a></li>
+                <li><a href="{{ url_for('rebalance') }}" class="text-blue-500 hover:text-blue-700">Rebalance Portfolio</a></li>
+                <li><a href="{{ url_for('correlation_heatmap') }}" class="text-blue-500 hover:text-blue-700">Correlation Heatmap</a></li>
+                <li><a href="{{ url_for('generate_pdf_report') }}" class="text-blue-500 hover:text-blue-700">Generate PDF Report</a></li>
+            </ul>
+        </nav>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span class="block sm:inline">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-xl font-semibold mb-4">Current Portfolio</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Symbol</th>
+                            <th class="py-3 px-4 text-left">Shares</th>
+                            <th class="py-3 px-4 text-left">Current Price</th>
+                            <th class="py-3 px-4 text-left">Market Value</th>
+                            <th class="py-3 px-4 text-left">Cost Basis</th>
+                            <th class="py-3 px-4 text-left">Gain/Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        {% for stock in portfolio %}
+                            <tr>
+                                <td class="py-3 px-4">{{ stock.symbol }}</td>
+                                <td class="py-3 px-4">{{ stock.shares }}</td>
+                                <td class="py-3 px-4">${{ "%.2f"|format(stock.current_price) }}</td>
+                                <td class="py-3 px-4">${{ "%.2f"|format(stock.market_value) }}</td>
+                                <td class="py-3 px-4">${{ "%.2f"|format(stock.cost) }}</td>
+                                <td class="py-3 px-4 {% if stock.gain_loss > 0 %}text-green-500{% elif stock.gain_loss < 0 %}text-red-500{% endif %}">
+                                    ${{ "%.2f"|format(stock.gain_loss) }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h3 class="text-xl font-semibold mb-4">Portfolio Summary</h3>
+            <ul class="list-disc list-inside">
+                <li>Total Cost: ${{ "%.2f"|format(total_cost) }}</li>
+                <li>Total Market Value: ${{ "%.2f"|format(total_value) }}</li>
+                <li>Total Gain/Loss: 
+                    <span class="{% if total_gain_loss > 0 %}text-green-500{% elif total_gain_loss < 0 %}text-red-500{% endif %}">
+                        ${{ "%.2f"|format(total_gain_loss) }}
+                        ({{ "%.2f"|format(total_gain_loss / (total_cost + 1) * 100) }}%)
+                    </span>
+                </li>
+            </ul>
+            <h2>Portfolio Summary</h2>
+            <p>Total Value: ${{ "%.2f"|format(total_value) }}</p>
+            <p>Total Cost: ${{ "%.2f"|format(total_cost) }}</p>
+            <p>Total Gain/Loss: ${{ "%.2f"|format(total_gain_loss) }}</p>
+
+            <form action="{{ url_for('save_current_value') }}" method="post">
+                <button type="submit" class="btn btn-primary">Save Current Value</button>
+            </form>
+        </div>
+                
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h3 class="text-xl font-semibold mb-4">Portfolio Value Over Time</h3>
+            <form class="mb-4">
+                <div class="flex space-x-4">
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date:</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-gray-700">End Date:</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Update Chart
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div id="portfolio-chart"></div>
+        </div>
+    </div>
+    
+    <script>
+        var graphJSON = {{ graph_json | safe }};
+        Plotly.newPlot('portfolio-chart', graphJSON.data, graphJSON.layout);
+    </script>
+</body>
+</html>

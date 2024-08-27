@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Distribution - Portfolio Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Portfolio Distribution</h1>
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li><a href="{{ url_for('index') }}" class="text-blue-500 hover:text-blue-700">Back to Portfolio</a></li>
+                <li><a href="{{ url_for('add_transaction_route') }}" class="text-blue-500 hover:text-blue-700">Add Transaction</a></li>
+                <li><a href="{{ url_for('transaction_history') }}" class="text-blue-500 hover:text-blue-700">Transaction History</a></li>
+                <li><a href="{{ url_for('stock_performance') }}" class="text-blue-500 hover:text-blue-700">Stock Performance</a></li>
+            </ul>
+        </nav>
+        
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-xl font-semibold mb-4">Portfolio Composition</h2>
+            <div id="portfolio-distribution-chart" class="w-full h-96"></div>
+        </div>
+        
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-xl font-semibold mb-4">Distribution Details</h2>
+            <p class="mb-4">This chart shows the current distribution of your portfolio based on the market value of each stock. It helps you visualize how your investments are allocated across different companies.</p>
+            <p>Key points to consider:</p>
+            <ul class="list-disc list-inside">
+                <li>Diversification: Ensure your portfolio isn't overly concentrated in a single stock or sector.</li>
+                <li>Rebalancing: Consider rebalancing if any single position becomes too dominant.</li>
+                <li>Risk management: Assess if your current distribution aligns with your risk tolerance and investment goals.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        var graphJSON = {{ graph_json | safe }};
+        Plotly.newPlot('portfolio-distribution-chart', graphJSON.data, graphJSON.layout);
+    </script>
+</body>
+</html>

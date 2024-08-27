@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import CSV - Portfolio Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Import CSV</h1>
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li><a href="{{ url_for('index') }}" class="text-blue-500 hover:text-blue-700">Back to Portfolio</a></li>
+            </ul>
+        </nav>
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <form action="{{ url_for('import_csv') }}" method="post" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label for="csv_data" class="block text-gray-700 text-sm font-bold mb-2">Paste CSV Data</label>
+                    <textarea id="csv_data" name="csv_data" rows="10" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Symbol,Shares,Total Price,Transaction Type"></textarea>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Import CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-xl font-semibold mb-4">CSV Format</h2>
+            <p class="mb-2">The CSV should have the following columns:</p>
+            <ul class="list-disc list-inside mb-4">
+                <li>Symbol (e.g., AAPL)</li>
+                <li>Shares (e.g., 100)</li>
+                <li>Total Price (e.g., 15000)</li>
+                <li>Transaction Type (buy or sell)</li>
+            </ul>
+            <p class="mb-2">Example:</p>
+            <pre class="bg-gray-100 p-2 rounded">
+Symbol,Shares,Total Price,Transaction Type
+AAPL,100,15000,buy
+GOOGL,50,75000,buy
+            </pre>
+        </div>
+    </div>
+</body>
+</html>

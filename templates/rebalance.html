@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Rebalancing - Portfolio Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Portfolio Rebalancing</h1>
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li><a href="{{ url_for('index') }}" class="text-blue-500 hover:text-blue-700">Back to Portfolio</a></li>
+            </ul>
+        </nav>
+        
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-xl font-semibold mb-4">Current Allocation</h2>
+            <form method="POST">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Symbol</th>
+                            <th class="py-3 px-4 text-left">Current Allocation</th>
+                            <th class="py-3 px-4 text-left">Target Allocation</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        {% for stock in portfolio %}
+                            <tr>
+                                <td class="py-3 px-4">{{ stock.symbol }}</td>
+                                <td class="py-3 px-4">{{ "%.2f"|format(stock.market_value / total_value * 100) }}%</td>
+                                <td class="py-3 px-4">
+                                    <input type="number" step="0.01" min="0" max="100" name="target_{{ stock.symbol }}" value="{{ "%.2f"|format(stock.market_value / total_value * 100) }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-4">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Calculate Rebalance
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        {% if rebalance_suggestions %}
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-xl font-semibold mb-4">Rebalancing Suggestions</h2>
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Symbol</th>
+                            <th class="py-3 px-4 text-left">Action</th>
+                            <th class="py-3 px-4 text-left">Shares</th>
+                            <th class="py-3 px-4 text-left">Current Allocation</th>
+                            <th class="py-3 px-4 text-left">Target Allocation</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        {% for suggestion in rebalance_suggestions %}
+                            <tr>
+                                <td class="py-3 px-4">{{ suggestion.symbol }}</td>
+                                <td class="py-3 px-4">{{ suggestion.action }}</td>
+                                <td class="py-3 px-4">{{ suggestion.shares }}</td>
+                                <td class="py-3 px-4">{{ "%.2f"|format(suggestion.current_allocation) }}%</td>
+                                <td class="py-3 px-4">{{ "%.2f"|format(suggestion.target_allocation) }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

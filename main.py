@@ -20,9 +20,40 @@ import matplotlib.pyplot as plt
 import schedule
 import pytz
 from datetime import datetime, time as datetime_time
+import logging
+from logging.handlers import RotatingFileHandler
+import os
+
+def setup_logging():
+    log_dir = 'logs'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    log_file = os.path.join(log_dir, 'portfolio_tracker.log')
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    file_handler = RotatingFileHandler(log_file, maxBytes=1024 * 1024, backupCount=10)
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.DEBUG)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    console_handler.setLevel(logging.INFO)
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+
+    # Suppress some of the more verbose logging from libraries
+    logging.getLogger('werkzeug').setLevel(logging.WARNING)
+    logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a real secret key
+
+setup_logging()
 
 def create_database():
     conn = sqlite3.connect('portfolio.db')
@@ -111,6 +142,8 @@ def get_portfolio_value_at_time(time_str):
             total_value += shares * current_price
     return total_value
 
+logger = logging.getLogger(__name__)
+
 def get_stock_price(symbol, period="1d", time_str=None):
     try:
         ticker = yf.Ticker(symbol)
@@ -129,7 +162,7 @@ def get_stock_price(symbol, period="1d", time_str=None):
             hist = ticker.history(period=period)
             return hist['Close'].iloc[-1], hist['Close'].iloc[0]
     except Exception as e:
-        print(f"Error fetching data for {symbol}: {str(e)}")
+        logger.error(f"Error fetching data for {symbol}: {str(e)}")
         return None, None
 
 def get_historical_values(period):
@@ -158,6 +191,7 @@ def save_current_value():
               (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), total_value))
     conn.commit()
     conn.close()
+    logger.info(f"Current portfolio value saved: {total_value}")
     flash('Current portfolio value saved successfully', 'success')
     return redirect(url_for('index'))
 
@@ -466,7 +500,6 @@ def is_market_open():
     now = datetime.now(pytz.timezone('US/Eastern'))
     market_start = datetime_time(9, 30)
     market_end = datetime_time(16, 0)
-    print("Market is open: ", is_market_open())
     return (now.weekday() < 5 and
             market_start <= now.time() <= market_end)
 
@@ -479,7 +512,7 @@ def save_portfolio_value():
                   (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), total_value))
         conn.commit()
         conn.close()
-        print("Portfolio value saved: ", total_value)
+        logging.info(f"Portfolio value saved: {total_value}")
 
 def run_schedule():
     while True:
